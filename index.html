@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Lluvia Romántica Matrix</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    canvas {
+      display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .te-amo {
+      position: absolute;
+      color: #ff66cc;
+      font-size: 2rem;
+      pointer-events: none;
+      animation: flotar 1.5s ease-out forwards;
+      text-shadow: 0 0 8px #ff66cc, 0 0 15px #ff66cc;
+    }
+
+    @keyframes flotar {
+      0% { transform: translateY(0) scale(1); opacity: 1; color: #ff66cc; }
+      50% { color: #ff99dd; }
+      100% { transform: translateY(-40px) scale(1.5); opacity: 0; color: #ffccee; }
+    }
+  </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+
+  // Ajustar tamaño de pantalla
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const phrase = '💖 I love you Valery 💖';
+  const fontSize = 20;
+  const columns = Math.floor(canvas.width / fontSize);
+  const drops = Array(columns).fill(0);
+
+  // Partículas para fuegos artificiales
+  let particles = [];
+
+  function draw() {
+    // Fondo con opacidad para estela
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Lluvia de frases
+    ctx.fillStyle = '#ff66cc';
+    ctx.font = fontSize + "px monospace";
+
+    for (let i = 0; i < drops.length; i++) {
+      ctx.fillText(phrase, i * fontSize, drops[i] * fontSize);
+
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+        drops[i] = 0;
+      }
+
+      drops[i]++;
+    }
+
+    // Dibujar partículas
+    drawParticles();
+  }
+
+  function drawParticles() {
+    particles = particles.filter(p => p.life > 0);
+    for (let p of particles) {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.vy += 0.05; // gravedad
+      p.life--;
+
+      ctx.beginPath();
+      ctx.shadowColor = p.color;
+      ctx.shadowBlur = 8;
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      ctx.fillStyle = p.color;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  function createExplosion(x, y) {
+    for (let i = 0; i < 40; i++) {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.random() * 3 + 2;
+      const vx = Math.cos(angle) * speed;
+      const vy = Math.sin(angle) * speed;
+      const color = `hsl(${Math.random() * 20 + 320}, 100%, 70%)`;
+      const size = Math.random() * 2 + 1;
+      particles.push({ x, y, vx, vy, life: 60, color, size });
+    }
+  }
+
+  // Intervalo para animar todo
+  setInterval(draw, 50);
+
+  // Al hacer clic: mostrar texto + explotar
+  document.addEventListener('click', e => {
+    const x = e.clientX;
+    const y = e.clientY;
+
+    // Texto
+    const el = document.createElement('div');
+    el.className = 'te-amo';
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
+    el.textContent = 'Te amo Valery 💘';
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 1500);
+
+    // Fuego artificial
+    createExplosion(x, y);
+  });
+
+  // Redimensionar canvas
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
+</body>
+</html>
